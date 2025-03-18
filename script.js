@@ -35,7 +35,7 @@ let swaps = 0;
 let start_time = 0;
 let current_step = 0;
 let previous_array = null; // To track array changes for sound
-const ARRAY_SIZE = 50;
+const ARRAY_SIZE = 75; // Changed from 150 back to 50 (removing 2/3 of pillars)
 const MIN_VALUE = 5;
 const MAX_VALUE = 100;
 
