@@ -2,17 +2,21 @@
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 const algorithm_select = document.getElementById('algorithm');
-const generate_btn = document.getElementById('generateBtn');
-const start_btn = document.getElementById('startBtn');
-const reset_btn = document.getElementById('resetBtn');
+const generate_btn = document.getElementById('generate_btn');
+const start_btn = document.getElementById('start_btn');
+const reset_btn = document.getElementById('reset_btn');
 const speed_control = document.getElementById('speed');
-const current_algorithm_element = document.getElementById('currentAlgorithm');
-const algorithm_description_element = document.getElementById('algorithmDescription');
+const current_algorithm_element = document.getElementById('current_algorithm');
+const algorithm_description_element = document.getElementById('algorithm_description');
 const comparisons_element = document.getElementById('comparisons');
 const swaps_element = document.getElementById('swaps');
 const time_element = document.getElementById('time');
 const sound_toggle = document.getElementById('sound_toggle');
-const swap_sound = document.getElementById('swap_sound');
+
+// Audio Context setup
+let audio_ctx;
+let oscillator;
+let gain_node;
 
 // Zustandsvariablen
 let array = [];
@@ -29,7 +33,7 @@ const MIN_VALUE = 5;
 const MAX_VALUE = 100;
 
 // Algorithmus-Beschreibungen
-const algorithmDescriptions = {
+const algorithm_descriptions = {
     bubble: "Bubble Sort vergleicht benachbarte Elemente und tauscht sie, wenn sie in der falschen Reihenfolge sind. Der Algorithmus durchläuft die Liste mehrmals und 'schiebt' das größte Element nach oben.",
     selection: "Selection Sort teilt die Liste in einen sortierten und einen unsortierten Teil. In jedem Schritt wird das kleinste Element aus dem unsortierten Teil gefunden und in den sortierten Teil verschoben.",
     insertion: "Insertion Sort baut eine sortierte Liste nach und nach auf, indem es ein Element nach dem anderen aus der unsortierten Liste nimmt und an der richtigen Position in der sortierten Liste einfügt.",
@@ -88,9 +92,9 @@ function draw_array(arr, highlight = []) {
         } else if (highlight[1] === i) {
             ctx.fillStyle = '#FF851B'; // Orange für zweiten Vergleichswert
         } else if (highlight[2] === i) {
-            ctx.fillStyle = '#3D9970'; // Grün für sortierte Elemente
+            ctx.fillStyle = '#00cc00'; // Hacker Green für sortierte Elemente
         } else {
-            ctx.fillStyle = '#0074D9'; // Blau für normale Elemente
+            ctx.fillStyle = '#00ff00'; // Bright Hacker Green für normale Elemente
         }
         
         const bar_height = arr[i] * scale_factor;
@@ -103,20 +107,35 @@ function draw_array(arr, highlight = []) {
     }
 }
 
+// Initialize audio context
+function init_audio() {
+    audio_ctx = new (window.AudioContext || window.webkitAudioContext)();
+    gain_node = audio_ctx.createGain();
+    gain_node.connect(audio_ctx.destination);
+    gain_node.gain.value = 0.1; // Keep volume low
+}
+
 // Play sound when a bar changes position
 function play_swap_sound(value) {
-    if (sound_toggle.checked) {
-        // Calculate pitch based on the value's position in the possible range
-        // Map the value from MIN_VALUE-MAX_VALUE to a reasonable pitch range (0.5-2.0)
-        const normalized_value = (value - MIN_VALUE) / (MAX_VALUE - MIN_VALUE);
-        const pitch = 0.5 + normalized_value * 1.5; // This gives us a range from 0.5 to 2.0
-        
-        swap_sound.volume = 0.3; // Keep volume moderate
-        swap_sound.playbackRate = pitch;
-        
-        // Clone and play the sound to allow overlapping sounds
-        swap_sound.cloneNode(true).play().catch(e => console.log("Audio playback error:", e));
-    }
+    if (!sound_toggle.checked) return;
+    if (!audio_ctx) init_audio();
+    
+    // Map value to frequency range (lower number = lower frequency)
+    // Using exponential scale for more natural sound
+    const min_freq = 220; // A3 note
+    const max_freq = 880; // A5 note
+    const normalized_value = (value - MIN_VALUE) / (MAX_VALUE - MIN_VALUE);
+    const frequency = min_freq * Math.pow(max_freq/min_freq, normalized_value);
+    
+    // Create and configure oscillator
+    const osc = audio_ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = frequency;
+    osc.connect(gain_node);
+    
+    // Play short beep
+    osc.start();
+    setTimeout(() => osc.stop(), 50);
 }
 
 // Check for array changes to trigger sound
@@ -532,7 +551,7 @@ function reset_animation() {
 function update_algorithm_description() {
     const algorithm = algorithm_select.value;
     current_algorithm_element.textContent = algorithm_select.options[algorithm_select.selectedIndex].text;
-    algorithm_description_element.textContent = algorithmDescriptions[algorithm];
+    algorithm_description_element.textContent = algorithm_descriptions[algorithm];
 }
 
 // Event-Listener

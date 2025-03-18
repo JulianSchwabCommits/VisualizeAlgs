@@ -11,7 +11,7 @@
         <h1>Algorithmen-Visualisierung</h1>
         
         <div class="controls">
-            <div class="algorithm-selector">
+            <div class="algorithm_selector">
                 <label for="algorithm">Algorithmus auswählen:</label>
                 <select id="algorithm">
                     <option value="bubble">Bubble Sort</option>
@@ -23,17 +23,17 @@
             </div>
             
             <div class="buttons">
-                <button id="generateBtn">Neue Daten generieren</button>
-                <button id="startBtn">Start</button>
-                <button id="resetBtn">Zurücksetzen</button>
+                <button id="generate_btn">Neue Daten generieren</button>
+                <button id="start_btn">Start</button>
+                <button id="reset_btn">Zurücksetzen</button>
             </div>
             
-            <div class="speed-control">
+            <div class="speed_control">
                 <label for="speed">Geschwindigkeit:</label>
                 <input type="range" id="speed" min="1" max="100" value="50">
             </div>
             
-            <div class="sound-control">
+            <div class="sound_control">
                 <label for="sound_toggle">Sound:</label>
                 <input type="checkbox" id="sound_toggle" checked>
             </div>
@@ -41,9 +41,9 @@
         
         <canvas id="visualizer"></canvas>
         
-        <div class="info-panel">
-            <h2 id="currentAlgorithm">Bubble Sort</h2>
-            <p id="algorithmDescription">Ein einfacher Sortieralgorithmus, der benachbarte Elemente vergleicht und tauscht.</p>
+        <div class="info_panel">
+            <h2 id="current_algorithm">Bubble Sort</h2>
+            <p id="algorithm_description">Ein einfacher Sortieralgorithmus, der benachbarte Elemente vergleicht und tauscht.</p>
             <div class="stats">
                 <div>Vergleiche: <span id="comparisons">0</span></div>
                 <div>Tauschvorgänge: <span id="swaps">0</span></div>
@@ -51,11 +51,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Audio elements for sound effects -->
-    <audio id="swap_sound" preload="auto">
-        <source src="https://assets.coderrocketfuel.com/pomodoro-times-up.mp3" type="audio/mpeg">
-    </audio>
 
     <script src="script.js"></script>
 </body>
