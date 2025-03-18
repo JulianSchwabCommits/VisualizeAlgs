@@ -3,54 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algorithmen-Visualisierung</title>
+    <title>Algorithm Visualizer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Algorithmen-Visualisierung</h1>
+        <h1>Algorithm Visualizer</h1>
+        <p class="subtitle">Visualize and understand sorting algorithms in real-time</p>
         
         <div class="controls">
-            <div class="algorithm_selector">
-                <label for="algorithm">Algorithmus auswählen:</label>
-                <select id="algorithm">
-                    <option value="bubble">Bubble Sort</option>
-                    <option value="selection">Selection Sort</option>
-                    <option value="insertion">Insertion Sort</option>
-                    <option value="quick">Quick Sort</option>
-                    <option value="merge">Merge Sort</option>
-                </select>
+            <div class="control-group">
+                <div class="algorithm-selector">
+                    <label for="algorithm">Algorithm:</label>
+                    <select id="algorithm">
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                        <option value="quick">Quick Sort</option>
+                        <option value="merge">Merge Sort</option>
+                    </select>
+                </div>
+                
+                <div class="speed-control">
+                    <label for="speed">Speed:</label>
+                    <input type="range" id="speed" min="1" max="100" value="50">
+                </div>
+
+                <div class="sound-control">
+                    <label for="sound_toggle">Sound:</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="sound_toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
             </div>
             
             <div class="buttons">
-                <button id="generate_btn">Neue Daten generieren</button>
-                <button id="start_btn">Start</button>
-                <button id="reset_btn">Zurücksetzen</button>
-            </div>
-            
-            <div class="speed_control">
-                <label for="speed">Geschwindigkeit:</label>
-                <input type="range" id="speed" min="1" max="100" value="50">
-            </div>
-            
-            <div class="sound_control">
-                <label for="sound_toggle">Sound:</label>
-                <input type="checkbox" id="sound_toggle" checked>
+                <button id="generateBtn">Generate New Data</button>
+                <button id="startBtn">Start</button>
+                <button id="resetBtn">Reset</button>
             </div>
         </div>
         
-        <canvas id="visualizer"></canvas>
+        <div class="visualization-container">
+            <canvas id="visualizer"></canvas>
+        </div>
         
-        <div class="info_panel">
-            <h2 id="current_algorithm">Bubble Sort</h2>
-            <p id="algorithm_description">Ein einfacher Sortieralgorithmus, der benachbarte Elemente vergleicht und tauscht.</p>
+        <div class="info-panel">
+            <div class="algorithm-info">
+                <h2 id="currentAlgorithm">Bubble Sort</h2>
+                <p id="algorithmDescription">A simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.</p>
+            </div>
             <div class="stats">
-                <div>Vergleiche: <span id="comparisons">0</span></div>
-                <div>Tauschvorgänge: <span id="swaps">0</span></div>
-                <div>Zeit: <span id="time">0</span> ms</div>
+                <div class="stat-item">Comparisons: <span id="comparisons">0</span></div>
+                <div class="stat-item">Swaps: <span id="swaps">0</span></div>
+                <div class="stat-item">Time: <span id="time">0</span> ms</div>
             </div>
         </div>
     </div>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="swap_sound" preload="auto">
+        <source src="https://assets.coderrocketfuel.com/pomodoro-times-up.mp3" type="audio/mpeg">
+    </audio>
 
     <script src="script.js"></script>
 </body>

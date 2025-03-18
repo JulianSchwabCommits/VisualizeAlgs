@@ -34,25 +34,49 @@ const MAX_VALUE = 100;
 
 // Algorithmus-Beschreibungen
 const algorithm_descriptions = {
-    bubble: "Bubble Sort vergleicht benachbarte Elemente und tauscht sie, wenn sie in der falschen Reihenfolge sind. Der Algorithmus durchläuft die Liste mehrmals und 'schiebt' das größte Element nach oben.",
-    selection: "Selection Sort teilt die Liste in einen sortierten und einen unsortierten Teil. In jedem Schritt wird das kleinste Element aus dem unsortierten Teil gefunden und in den sortierten Teil verschoben.",
-    insertion: "Insertion Sort baut eine sortierte Liste nach und nach auf, indem es ein Element nach dem anderen aus der unsortierten Liste nimmt und an der richtigen Position in der sortierten Liste einfügt.",
-    quick: "Quick Sort verwendet ein Teile-und-Herrsche-Verfahren. Ein Pivot-Element wird ausgewählt und die Liste wird so umgeordnet, dass alle kleineren Elemente vor und alle größeren nach dem Pivot stehen.",
-    merge: "Merge Sort zerlegt die Liste in kleinere Teillisten, sortiert diese und führt sie dann wieder zu einer sortierten Gesamtliste zusammen. Es ist ein stabiler, effizienter Sortieralgorithmus."
+    bubble: "Compares adjacent elements and swaps them if they're in the wrong order. Simple but inefficient for large datasets.",
+    selection: "Divides the array into sorted and unsorted regions, repeatedly selecting the smallest element from the unsorted region.",
+    insertion: "Builds the final sorted array one item at a time, by repeatedly inserting a new element into the sorted portion of the array.",
+    quick: "Uses a divide-and-conquer strategy with a pivot element to partition and sort the array. Highly efficient for most cases.",
+    merge: "A stable, divide-and-conquer algorithm that recursively splits the array, sorts, and merges back together. Consistent O(n log n) performance."
 };
 
 // Canvas-Dimensionen anpassen
 function resize_canvas() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // Get the display dimensions of the container
+    const rect = canvas.getBoundingClientRect();
+    
+    // Set the canvas dimensions to match the display size
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    // Reset any transformations
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // Redraw the array if it exists
+    if (array && array.length > 0) {
+        draw_array(array);
+    }
 }
 
 // Array mit zufälligen Werten initialisieren
 function generate_random_array() {
     array = [];
     for (let i = 0; i < ARRAY_SIZE; i++) {
-        array.push(Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE);
+        const value = Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
+        array.push(value);
     }
+    
+    // Debug logging
+    console.log('Generated array:', {
+        length: array.length,
+        min: Math.min(...array),
+        max: Math.max(...array),
+        sample: array.slice(0, 5)
+    });
+    
+    // Ensure canvas is properly sized before drawing
+    resize_canvas();
     reset_stats();
     draw_array(array);
     is_running = false;
@@ -80,31 +104,64 @@ function update_stats() {
 
 // Array zeichnen
 function draw_array(arr, highlight = []) {
+    if (!arr || arr.length === 0) {
+        console.warn('No array data to draw');
+        return;
+    }
+
+    // Clear the entire canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    const bar_width = canvas.width / arr.length;
-    const scale_factor = canvas.height / MAX_VALUE;
+    // Calculate dimensions
+    const padding = 10;
+    const available_width = canvas.width - (2 * padding);
+    const available_height = canvas.height - (2 * padding);
+    const bar_width = Math.floor(available_width / arr.length);
+    const scale_factor = (available_height * 0.9) / MAX_VALUE; // Leave 10% margin at top
     
-    for (let i = 0; i < arr.length; i++) {
-        // Farbe basierend auf Hervorhebung bestimmen
+    // Debug logging
+    console.log('Drawing array:', {
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height,
+        availableWidth: available_width,
+        availableHeight: available_height,
+        barWidth: bar_width,
+        scaleFactor: scale_factor,
+        arrayLength: arr.length,
+        firstValue: arr[0],
+        lastValue: arr[arr.length - 1]
+    });
+    
+    // Draw each bar
+    arr.forEach((value, i) => {
+        // Set color based on highlight state
         if (highlight[0] === i) {
-            ctx.fillStyle = '#FF4136'; // Rot für aktiven Vergleich
+            ctx.fillStyle = '#404040'; // Dark grey for active comparison
         } else if (highlight[1] === i) {
-            ctx.fillStyle = '#FF851B'; // Orange für zweiten Vergleichswert
+            ctx.fillStyle = '#808080'; // Medium grey for second value
         } else if (highlight[2] === i) {
-            ctx.fillStyle = '#00cc00'; // Hacker Green für sortierte Elemente
+            ctx.fillStyle = '#d3d3d3'; // Light grey for sorted elements
         } else {
-            ctx.fillStyle = '#00ff00'; // Bright Hacker Green für normale Elemente
+            ctx.fillStyle = '#e8e8e8'; // Lighter grey for normal elements
         }
         
-        const bar_height = arr[i] * scale_factor;
-        ctx.fillRect(
-            i * bar_width, 
-            canvas.height - bar_height, 
-            bar_width - 1, 
-            bar_height
-        );
-    }
+        // Calculate bar dimensions
+        const bar_height = Math.max(value * scale_factor, 2); // Minimum height of 2px
+        const x = padding + (i * bar_width);
+        const y = canvas.height - padding - bar_height;
+        const width = Math.max(bar_width - 2, 1); // Leave 1px gap between bars
+        
+        // Draw bar (simplified version without rounded corners for debugging)
+        ctx.fillRect(x, y, width, bar_height);
+        
+        // Debug log for first and last bars
+        if (i === 0 || i === arr.length - 1) {
+            console.log(`Bar ${i}:`, {
+                x, y, width, height: bar_height,
+                value, color: ctx.fillStyle
+            });
+        }
+    });
 }
 
 // Initialize audio context
@@ -344,40 +401,81 @@ async function quick_sort(arr) {
     let comp_count = 0;
     let swap_count = 0;
     
+    // Helper function to swap elements and record state
+    function swap(i, j) {
+        [arr_copy[i], arr_copy[j]] = [arr_copy[j], arr_copy[i]];
+        swap_count++;
+        states.push({
+            array: [...arr_copy],
+            highlight: [i, j, null],
+            comparisons: comp_count,
+            swaps: swap_count
+        });
+    }
+    
+    // Choose median-of-three as pivot
+    function choose_pivot(low, high) {
+        const mid = Math.floor((low + high) / 2);
+        const a = arr_copy[low];
+        const b = arr_copy[mid];
+        const c = arr_copy[high];
+        
+        comp_count += 2;
+        // Return the index of the median value
+        if (a <= b && b <= c) return mid;
+        if (a <= c && c <= b) return high;
+        if (b <= a && a <= c) return low;
+        if (b <= c && c <= a) return high;
+        if (c <= a && a <= b) return low;
+        return mid;
+    }
+    
     async function partition(low, high) {
-        const pivot = arr_copy[high];
+        // Choose better pivot using median-of-three
+        const pivot_idx = choose_pivot(low, high);
+        const pivot = arr_copy[pivot_idx];
+        
+        // Move pivot to end
+        if (pivot_idx !== high) {
+            swap(pivot_idx, high);
+        }
+        
         let i = low - 1;
+        
+        // Record partition range
+        states.push({
+            array: [...arr_copy],
+            highlight: [low, high, null],
+            comparisons: comp_count,
+            swaps: swap_count
+        });
         
         for (let j = low; j < high; j++) {
             comp_count++;
             
+            // Highlight current comparison
             states.push({
                 array: [...arr_copy],
-                highlight: [j, high, i],
+                highlight: [j, high, i >= low ? i : null],
                 comparisons: comp_count,
                 swaps: swap_count
             });
             
             if (arr_copy[j] <= pivot) {
                 i++;
-                [arr_copy[i], arr_copy[j]] = [arr_copy[j], arr_copy[i]];
-                swap_count++;
-                
-                states.push({
-                    array: [...arr_copy],
-                    highlight: [i, j, high],
-                    comparisons: comp_count,
-                    swaps: swap_count
-                });
+                if (i !== j) {
+                    swap(i, j);
+                }
             }
         }
         
-        [arr_copy[i + 1], arr_copy[high]] = [arr_copy[high], arr_copy[i + 1]];
-        swap_count++;
+        // Place pivot in its final position
+        swap(i + 1, high);
         
+        // Highlight the partition point
         states.push({
             array: [...arr_copy],
-            highlight: [i + 1, high, null],
+            highlight: [i + 1, null, null],
             comparisons: comp_count,
             swaps: swap_count
         });
@@ -387,6 +485,14 @@ async function quick_sort(arr) {
     
     async function quick_sort_recursive(low, high) {
         if (low < high) {
+            // Show current subarray being processed
+            states.push({
+                array: [...arr_copy],
+                highlight: [low, high, null],
+                comparisons: comp_count,
+                swaps: swap_count
+            });
+            
             const pi = await partition(low, high);
             
             await quick_sort_recursive(low, pi - 1);
@@ -396,7 +502,7 @@ async function quick_sort(arr) {
     
     await quick_sort_recursive(0, arr_copy.length - 1);
     
-    // Finalen Zustand aufzeichnen
+    // Final state
     states.push({
         array: [...arr_copy],
         highlight: [],
@@ -554,14 +660,42 @@ function update_algorithm_description() {
     algorithm_description_element.textContent = algorithm_descriptions[algorithm];
 }
 
+// Initialisierung
+function init() {
+    console.log('Initializing visualization...');
+    
+    // Check if canvas exists and context is available
+    if (!canvas) {
+        console.error('Canvas element not found!');
+        return;
+    }
+    if (!ctx) {
+        console.error('Could not get canvas context!');
+        return;
+    }
+    
+    console.log('Canvas dimensions:', {
+        width: canvas.width,
+        height: canvas.height,
+        offsetWidth: canvas.offsetWidth,
+        offsetHeight: canvas.offsetHeight,
+        style: {
+            width: canvas.style.width,
+            height: canvas.style.height
+        }
+    });
+    
+    resize_canvas();
+    generate_random_array();
+    update_algorithm_description();
+}
+
+// Call init when the page loads
+window.addEventListener('load', init);
+
 // Event-Listener
 window.addEventListener('resize', resize_canvas);
 algorithm_select.addEventListener('change', update_algorithm_description);
 generate_btn.addEventListener('click', generate_random_array);
 start_btn.addEventListener('click', start_algorithm);
-reset_btn.addEventListener('click', reset_animation);
-
-// Initialisierung
-resize_canvas();
-generate_random_array();
-update_algorithm_description(); 
+reset_btn.addEventListener('click', reset_animation); 
