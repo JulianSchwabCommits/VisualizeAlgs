@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithmen-Visualisierung</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Algorithmen-Visualisierung</h1>
+        
+        <div class="controls">
+            <div class="algorithm-selector">
+                <label for="algorithm">Algorithmus auswählen:</label>
+                <select id="algorithm">
+                    <option value="bubble">Bubble Sort</option>
+                    <option value="selection">Selection Sort</option>
+                    <option value="insertion">Insertion Sort</option>
+                    <option value="quick">Quick Sort</option>
+                    <option value="merge">Merge Sort</option>
+                </select>
+            </div>
+            
+            <div class="buttons">
+                <button id="generateBtn">Neue Daten generieren</button>
+                <button id="startBtn">Start</button>
+                <button id="resetBtn">Zurücksetzen</button>
+            </div>
+            
+            <div class="speed-control">
+                <label for="speed">Geschwindigkeit:</label>
+                <input type="range" id="speed" min="1" max="100" value="50">
+            </div>
+            
+            <div class="sound-control">
+                <label for="sound_toggle">Sound:</label>
+                <input type="checkbox" id="sound_toggle" checked>
+            </div>
+        </div>
+        
+        <canvas id="visualizer"></canvas>
+        
+        <div class="info-panel">
+            <h2 id="currentAlgorithm">Bubble Sort</h2>
+            <p id="algorithmDescription">Ein einfacher Sortieralgorithmus, der benachbarte Elemente vergleicht und tauscht.</p>
+            <div class="stats">
+                <div>Vergleiche: <span id="comparisons">0</span></div>
+                <div>Tauschvorgänge: <span id="swaps">0</span></div>
+                <div>Zeit: <span id="time">0</span> ms</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="swap_sound" preload="auto">
+        <source src="https://assets.coderrocketfuel.com/pomodoro-times-up.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html> 
