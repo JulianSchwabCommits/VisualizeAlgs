@@ -1,17 +1,24 @@
 // DOM-Elemente
-const canvas = document.getElementById('visualizer');
-const ctx = canvas.getContext('2d');
-const algorithm_select = document.getElementById('algorithm');
-const generate_btn = document.getElementById('generate_btn');
-const start_btn = document.getElementById('start_btn');
-const reset_btn = document.getElementById('reset_btn');
-const speed_control = document.getElementById('speed');
-const current_algorithm_element = document.getElementById('current_algorithm');
-const algorithm_description_element = document.getElementById('algorithm_description');
-const comparisons_element = document.getElementById('comparisons');
-const swaps_element = document.getElementById('swaps');
-const time_element = document.getElementById('time');
-const sound_toggle = document.getElementById('sound_toggle');
+let canvas, ctx, algorithm_select, generate_btn, start_btn, reset_btn, 
+    speed_control, current_algorithm_element, algorithm_description_element, 
+    comparisons_element, swaps_element, time_element, sound_toggle;
+
+// Initialize DOM references
+function initializeDOMReferences() {
+    canvas = document.getElementById('visualizer');
+    ctx = canvas?.getContext('2d');
+    algorithm_select = document.getElementById('algorithm');
+    generate_btn = document.getElementById('generate_btn');
+    start_btn = document.getElementById('start_btn');
+    reset_btn = document.getElementById('reset_btn');
+    speed_control = document.getElementById('speed');
+    current_algorithm_element = document.getElementById('currentAlgorithm');
+    algorithm_description_element = document.getElementById('algorithmDescription');
+    comparisons_element = document.getElementById('comparisons');
+    swaps_element = document.getElementById('swaps');
+    time_element = document.getElementById('time');
+    sound_toggle = document.getElementById('sound_toggle');
+}
 
 // Audio Context setup
 let audio_ctx;
@@ -80,7 +87,11 @@ function generate_random_array() {
     reset_stats();
     draw_array(array);
     is_running = false;
-    start_btn.disabled = false;
+    
+    // Only set button state if the button exists
+    if (start_btn) {
+        start_btn.disabled = false;
+    }
 }
 
 // Statistiken zurücksetzen
@@ -660,20 +671,42 @@ function update_algorithm_description() {
     algorithm_description_element.textContent = algorithm_descriptions[algorithm];
 }
 
+// Event-Listener setup function
+function setup_event_listeners() {
+    if (window) {
+        window.addEventListener('resize', resize_canvas);
+    }
+    
+    if (algorithm_select) {
+        algorithm_select.addEventListener('change', update_algorithm_description);
+    }
+    
+    if (generate_btn) {
+        generate_btn.addEventListener('click', generate_random_array);
+    }
+    
+    if (start_btn) {
+        start_btn.addEventListener('click', start_algorithm);
+    }
+    
+    if (reset_btn) {
+        reset_btn.addEventListener('click', reset_animation);
+    }
+}
+
 // Initialisierung
 function init() {
     console.log('Initializing visualization...');
     
+    initializeDOMReferences();
+    
     // Check if canvas exists and context is available
-    if (!canvas) {
-        console.error('Canvas element not found!');
-        return;
-    }
-    if (!ctx) {
-        console.error('Could not get canvas context!');
+    if (!canvas || !ctx) {
+        console.error('Canvas element not found or context not available!');
         return;
     }
     
+    // Log canvas dimensions
     console.log('Canvas dimensions:', {
         width: canvas.width,
         height: canvas.height,
@@ -688,14 +721,8 @@ function init() {
     resize_canvas();
     generate_random_array();
     update_algorithm_description();
+    setup_event_listeners();
 }
 
-// Call init when the page loads
-window.addEventListener('load', init);
-
-// Event-Listener
-window.addEventListener('resize', resize_canvas);
-algorithm_select.addEventListener('change', update_algorithm_description);
-generate_btn.addEventListener('click', generate_random_array);
-start_btn.addEventListener('click', start_algorithm);
-reset_btn.addEventListener('click', reset_animation); 
+// Call init when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', init);
